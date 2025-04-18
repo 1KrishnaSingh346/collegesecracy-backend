@@ -10,6 +10,8 @@ import premiumRoutes from './routes/premiumRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import mentorRoutes from './routes/mentorRoutes.js';
 import emailRoutes from './routes/email.route.js';
+import sendMailRouter from './routes/sendMail.js';
+
 import AppError from './utils/appError.js';
 import { globalErrorHandler, notFoundHandler } from './controllers/errorController.js';
 
@@ -48,6 +50,8 @@ app.use('/api/v1/premium', premiumRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/mentor', mentorRoutes);
 app.use('/api/v1/email', emailRoutes); // Fixed: added missing forward slash
+app.use('/api/v1/contact', sendMailRouter);   // For user email sending contact form
+
 
 // Error handling
 if (process.env.ENV_MODE === 'production') {
@@ -62,5 +66,6 @@ app.use(globalErrorHandler);
 
 // Handle 404 routes (uncomment if needed)
 // app.all('*', notFoundHandler);
+
 
 export default app;
