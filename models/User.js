@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
-  // Authentication Fields
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -61,6 +60,37 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'Bio cannot exceed 500 characters'],
     default: ''
   },
+  phone: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        return !v || /^\+?[1-9]\d{1,14}$/.test(v);
+      },
+      message: 'Invalid phone number format'
+    },
+    default: ''
+  },
+  location: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        return !v || /^[A-Za-z\s,]+$/.test(v);
+      },
+      message: 'Invalid location format'
+    },
+    default: ''
+  },
+  dateOfBirth: {
+    type: Date,
+    validate: {
+      validator: function(v) {
+        return !v || v <= Date.now();
+      },
+      message: 'Date of birth cannot be in the future'
+    },
+    default: null
+  },
+
   lastActive: {
     type: Date,
     default: Date.now
@@ -78,6 +108,24 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'Verification feedback too long']
   },
 
+  feedback: {
+    type: String,
+    default: '',
+    maxlength: [500, 'Feedback cannot exceed 500 characters']
+  },
+  // feedbackRating: { 
+  //   type: Number,
+  //   min: 1,
+  //   max: 5,
+  //   default: 0,
+  //   validate: {
+  //     validator: function(v) {
+  //       return v >= 1 && v <= 5;
+  //     },
+  //     message: 'Rating must be between 1 and 5'
+  //   }
+  // },
+
   // Subscription Fields
   premium: {
     type: Boolean,
@@ -85,6 +133,22 @@ const userSchema = new mongoose.Schema({
   },
   premiumSince: {
     type: Date
+  },
+
+  subscriptionPlan: {
+    type: String,
+    enum: ['basic', 'premium', 'enterprise'],
+    default: 'basic'
+  },
+  subscriptionPlanPrice: {
+    type: Number,
+    default: 0,
+    validate: {
+      validator: function(v) {
+        return v >= 0;
+      },
+      message: 'Price cannot be negative'
+    }
   },
 
   // Mentor-Specific Fields
