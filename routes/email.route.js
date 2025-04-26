@@ -5,7 +5,6 @@ import { body, validationResult } from "express-validator";
 import multer from "multer";
 import mongoose from "mongoose";
 import { createRequire } from 'module';
-import { escapedNewlineChars } from "pdf-lib";
 const require = createRequire(import.meta.url);
 const fs = require('fs');
 const path = require('path');
