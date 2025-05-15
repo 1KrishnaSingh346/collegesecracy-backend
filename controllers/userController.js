@@ -11,6 +11,7 @@ export const getMe = async (req, res, next) => {
       data: {
         user
       }
+        
     });
   } catch (err) {
     next(err);
