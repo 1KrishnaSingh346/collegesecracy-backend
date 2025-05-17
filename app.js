@@ -8,7 +8,7 @@ import userRouter from './routes/userRoutes.js';
 import paymentRouter from './routes/paymentRoutes.js';
 import premiumRoutes from './routes/premiumRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
-import mentorRoutes from './routes/mentorRoutes.js';
+import menteeRoutes from './routes/menteeRoutes.js';
 import emailRoutes from './routes/email.route.js';
 import sendMailRouter from './routes/sendMail.js';
 
@@ -48,7 +48,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/premium', premiumRoutes);
 app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/mentor', mentorRoutes);
+app.use('/api/v1/mentee', menteeRoutes);
 app.use('/api/v1/email', emailRoutes); // Fixed: added missing forward slash
 app.use('/api/v1/contact', sendMailRouter);   // For user email sending contact form
 

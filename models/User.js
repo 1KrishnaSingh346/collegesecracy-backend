@@ -151,6 +151,35 @@ const userSchema = new mongoose.Schema({
     }
   },
 
+// Add this to the User schema
+counselingPlans: {
+  josaa: {
+    active: { type: Boolean, default: false },
+    purchasedOn: Date,
+    validUntil: Date,
+    paymentId: String
+  },
+  jacDelhi: {
+    active: { type: Boolean, default: false },
+    purchasedOn: Date,
+    validUntil: Date,
+    paymentId: String
+  },
+  uptac: {
+    active: { type: Boolean, default: false },
+    purchasedOn: Date,
+    validUntil: Date,
+    paymentId: String
+  },
+  whatsapp: {
+    active: { type: Boolean, default: false },
+    purchasedOn: Date,
+    validUntil: Date,
+    paymentId: String,
+    whatsappGroupLink: String
+  }
+},
+
   // Mentor-Specific Fields
   idProof: {
     type: String,

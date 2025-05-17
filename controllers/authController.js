@@ -49,6 +49,17 @@ export const signup = async (req, res, next) => {
       return next(new AppError('Please provide all required fields', 400));
     }
 
+      // Check if user already exists
+    const existingUser = await User.findOne({ email });
+if (existingUser) {
+  console.log('Email already registered:', email);
+  return res.status(409).json({
+    status: 'fail',
+    message: 'Email already registered. Please log in.',
+    errors: [{ path: 'email', msg: 'Email already registered' }]
+  });
+}
+
     // Create new user
     const newUser = await User.create({
       email,
@@ -82,7 +93,7 @@ export const signup = async (req, res, next) => {
     console.error('Signup error:', err); // Detailed error log
     
     if (err.code === 11000) {
-      return next(new AppError('Email already exists', 400));
+      return next(new AppError('Email already exists', 409));
     }
     if (err.name === 'ValidationError') {
       const messages = Object.values(err.errors).map(val => val.message);

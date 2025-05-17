@@ -20,6 +20,7 @@ const upload = multer({
 const validateEmailWithPDF = [
   body("email").isEmail().withMessage("Invalid email address").normalizeEmail(),
   body("rank").isInt({ min: 1, max: 2000000 }).withMessage("Rank must be positive integer (1-2,000,000)"),
+   body("seatType").isString().trim().notEmpty().withMessage("seatType is required"),
   body("category").isString().trim().notEmpty().withMessage("Category is required"),
   body("name").optional().isString().trim().escape().isLength({ max: 100 }),
   body("counsellingType").optional().isString().trim().notEmpty().withMessage("Counselling Type is required"),
@@ -69,7 +70,7 @@ router.post("/send-with-pdf", upload.single('pdf'), validateEmailWithPDF, async 
   }
 
   try {
-    const { email, rank, category, name = "", counsellingType, round } = req.body;
+    const { email, rank, seatType, category, name = "", counsellingType, round } = req.body;
     const pdfFile = req.file;
 
     // Validate PDF file
@@ -93,7 +94,7 @@ router.post("/send-with-pdf", upload.single('pdf'), validateEmailWithPDF, async 
       from: process.env.EMAIL_FROM || `"College Predictor" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: `Your College Predictions (Rank ${rank})`,
-      html: generateEmailHTML({ name, rank, category, counsellingType, round }),
+      html: generateEmailHTML({ name, rank,seatType, category, counsellingType, round }),
       attachments: [{
         filename: `college-predictions-${rank}.pdf`,
         content: pdfFile.buffer,
@@ -113,7 +114,7 @@ router.post("/send-with-pdf", upload.single('pdf'), validateEmailWithPDF, async 
   }
 });
 
-function generateEmailHTML({ name, rank, category, counsellingType, round }) {
+function generateEmailHTML({ name, rank, seatType, category, counsellingType, round }) {
   return `
     <!DOCTYPE html>
     <html>
@@ -457,7 +458,7 @@ function generateEmailHTML({ name, rank, category, counsellingType, round }) {
               
               <div class="parameter-row">
                 <div class="parameter-label">Category : </div>
-                <div class="parameter-data"><span class="category-data">${category || 'Not specified'}</span></div>
+                <div class="parameter-data"><span class="category-data">${category || seatType || 'Not specified'}</span></div>
               </div>
               
               <div class="parameter-row">
