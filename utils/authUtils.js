@@ -15,7 +15,7 @@ const createSendToken = (user, statusCode, res) => {
     ),
     httpOnly: true,
     secure: process.env.ENV_MODE === 'production',
-    sameSite: process.env.ENV_MODE === 'production' ? 'lax' : 'none',
+    sameSite: process.env.ENV_MODE === 'production' ? 'none' : 'lax',
   };
 
   res.cookie('jwt', token, cookieOptions);
