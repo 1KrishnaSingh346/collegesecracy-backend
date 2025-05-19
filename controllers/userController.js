@@ -3,23 +3,29 @@ import AppError from '../utils/appError.js';
 import cloudinary from '../config/cloudinary.js';
 import fs from 'fs/promises';
 
+
+
 export const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id)
+      .select('-password -__v -passwordChangedAt -passwordResetToken -passwordResetExpires');
+    
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+
     res.status(200).json({
       status: 'success',
       data: {
         user
       }
-        
     });
   } catch (err) {
     next(err);
   }
 };
 
-
-export const updateMe = async (req, res) => {
+export const updateMe = async (req, res, next) => {
   try {
     const { id } = req.user;
     const filteredBody = {};
@@ -44,25 +50,16 @@ export const updateMe = async (req, res) => {
               const parsedDate = new Date(dateValue);
               
               if (isNaN(parsedDate.getTime())) {
-                return res.status(400).json({
-                  status: 'fail',
-                  message: 'Invalid date format for dateOfBirth (expected YYYY-MM-DD)'
-                });
+                return next(new AppError('Invalid date format for dateOfBirth (expected YYYY-MM-DD)', 400));
               }
               
               if (parsedDate > new Date()) {
-                return res.status(400).json({
-                  status: 'fail',
-                  message: 'Date of birth cannot be in the future'
-                });
+                return next(new AppError('Date of birth cannot be in the future', 400));
               }
               
               filteredBody[field] = parsedDate;
             } catch (err) {
-              return res.status(400).json({
-                status: 'fail',
-                message: 'Invalid date format for dateOfBirth'
-              });
+              return next(new AppError('Invalid date format for dateOfBirth', 400));
             }
           }
         } else {
@@ -94,10 +91,7 @@ export const updateMe = async (req, res) => {
           // Validate image size (max 5MB)
           const fileSize = Buffer.byteLength(req.body.profilePic) / (1024 * 1024);
           if (fileSize > 5) {
-            return res.status(400).json({
-              status: 'fail',
-              message: 'Profile picture must be less than 5MB'
-            });
+            return next(new AppError('Profile picture must be less than 5MB', 400));
           }
 
           // Upload with timeout protection
@@ -112,7 +106,7 @@ export const updateMe = async (req, res) => {
               invalidate: true
             }),
             new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Cloudinary upload timed out')), 15000)
+              setTimeout(() => reject(new AppError('Image upload took too long. Please try a smaller file.', 400)), 15000)
           )]);
 
           filteredBody.profilePic = {
@@ -122,12 +116,12 @@ export const updateMe = async (req, res) => {
         }
       } catch (uploadError) {
         console.error('Cloudinary upload error:', uploadError);
-        return res.status(400).json({
-          status: 'fail',
-          message: uploadError.message.includes('timed out') 
+        return next(new AppError(
+          uploadError.message.includes('timed out') 
             ? 'Image upload took too long. Please try a smaller file.' 
-            : 'Failed to process profile picture'
-        });
+            : 'Failed to process profile picture',
+          400
+        ));
       }
     }
 
@@ -144,20 +138,17 @@ export const updateMe = async (req, res) => {
     ).lean();
 
     if (!updatedUser) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'User not found'
-      });
+      return next(new AppError('User not found', 404));
     }
 
     // Format response data
     const responseData = {
       ...updatedUser,
-      dateOfBirth: updatedUser.dateOfBirth?.toISOString()?.split('T')[0] || null, // Return only date part
+      dateOfBirth: updatedUser.dateOfBirth?.toISOString()?.split('T')[0] || null,
       profilePic: updatedUser.profilePic?.url || null
     };
 
-    return res.status(200).json({
+    res.status(200).json({
       status: 'success',
       data: {
         user: responseData
@@ -174,34 +165,30 @@ export const updateMe = async (req, res) => {
         message: el.message
       }));
       
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Validation failed',
-        errors
-      });
+      return next(new AppError('Validation failed', 400, errors));
     }
 
     // Handle duplicate field errors
     if (err.code === 11000) {
       const field = Object.keys(err.keyValue)[0];
-      return res.status(409).json({
-        status: 'fail',
-        message: `${field} already exists`,
-        field
-      });
+      return next(new AppError(`${field} already exists`, 409, { field }));
     }
 
-    // Handle unexpected errors
-    return res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong'
-    });
+    next(err);
   }
 };
 
 export const deleteMe = async (req, res, next) => {
   try {
     await User.findByIdAndUpdate(req.user.id, { active: false });
+    
+    // Clear session cookie
+    res.clearCookie('session', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    
     res.status(204).json({
       status: 'success',
       data: null

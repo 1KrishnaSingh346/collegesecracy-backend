@@ -2,44 +2,35 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { User } from '../models/User.js';
 import AppError from '../utils/appError.js';
+import { createSendToken } from "../utils/authUtils.js";
 
-// Helper function to sign JWT token
-const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
-};
-
-// Helper function to create and send token
-const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user._id);
-  
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.ENV_MODE === 'production' ? 'none' : 'lax',
-  };
-
-  res.cookie('jwt', token, cookieOptions);
-  
-  // Remove password from output
-  user.password = undefined;
-
-  res.status(statusCode).json({
-    status: 'success',
-    token,
-    data: {
-      user
+// Session Management
+export const checkSession = async (req, res, next) => {
+  try {
+    // If execution reaches here, the auth middleware has already verified the session
+    const user = await User.findById(req.user.id).select('-password -__v -passwordChangedAt');
+    
+    if (!user) {
+      return res.status(401).json({
+        status: 'fail',
+        message: 'User not found'
+      });
     }
-  });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const signup = async (req, res, next) => {
   try {
-    console.log('Received signup request:', req.body); // Debug log
+    console.log('Received signup request:', req.body);
     
     const { email, password, fullName, role } = req.body;
     
