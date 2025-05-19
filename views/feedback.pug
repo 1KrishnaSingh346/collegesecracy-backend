@@ -1,0 +1,22 @@
+extends baseEmail
+
+block content
+  p Hi Admin Team,
+  p You've received new feedback from #{name} (#{email}).
+  
+  h3 Feedback Details:
+  table(style="width: 100%; border-collapse: collapse; margin: 20px 0;")
+    tr
+      td(style="padding: 8px; border: 1px solid #ddd;") Rating
+      td(style="padding: 8px; border: 1px solid #ddd;") #{rating}/5
+    tr
+      td(style="padding: 8px; border: 1px solid #ddd;") Message
+      td(style="padding: 8px; border: 1px solid #ddd;") #{message}
+    tr
+      td(style="padding: 8px; border: 1px solid #ddd;") Suggestions
+      td(style="padding: 8px; border: 1px solid #ddd;") #{suggestions}
+
+  p This feedback has been recorded in our system. You can view all feedback in the admin dashboard.
+  
+  p Best regards,
+  p The CollegeSecrecy Team
