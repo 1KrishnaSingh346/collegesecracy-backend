@@ -5,7 +5,7 @@ import { getCollegeDataByTypeAndRound } from '../controllers/adminController.js'
 
 const router = express.Router();
 
-router.use(protect); // mentee-authenticated routes
+//router.use(protect); // mentee-authenticated routes. // In emergency we are doing this
 
 router.route('/get-college-data/:type/:year/:round')
   .get(validateCollegeDataParams, getCollegeDataByTypeAndRound);
