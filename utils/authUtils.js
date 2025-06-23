@@ -22,7 +22,7 @@ const createSendToken = (user, statusCode, res) => {
   res.cookie('jwt', accessToken, {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'None' : 'Lax',
+    sameSite: isProd ? 'Strict' : 'Lax',
     maxAge: 15 * 60 * 1000 // 15 minutes
   });
 
@@ -30,7 +30,7 @@ const createSendToken = (user, statusCode, res) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'None' : 'Lax',
+    sameSite: isProd ? 'Strict' : 'Lax',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   });
 

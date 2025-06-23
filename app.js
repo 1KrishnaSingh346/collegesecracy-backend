@@ -15,6 +15,7 @@ import publicRoutes from './routes/publicRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js';
 import UserPurchase_Schema from "./models/UserPurchaseSchema.js";
 import { generateInvoice } from "./utils/generateInvoice.js";
+import path from "path";
 if (process.env.NODE_ENV === 'production') {
   import('./utils/invoiceCleanup.js');
 }
@@ -22,6 +23,7 @@ if (process.env.NODE_ENV === 'production') {
 import AppError from './utils/appError.js';
 import { globalErrorHandler, notFoundHandler } from './controllers/errorController.js';
 
+const __dirname = path.resolve();
 const app = express();
 
 // CORS configuration based on environment
@@ -49,6 +51,13 @@ app.set('trust proxy', 1);
 // Common middleware
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(express.static(path.join(__dirname, 'dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+
 
 // Routes
 app.use('/api/v1/auth', authRouter);

@@ -676,7 +676,7 @@ export const logout = (req, res) => {
     res.cookie('jwt', '', {
       httpOnly: true,
       secure: isProd,
-      sameSite: isProd ? 'None' : 'Strict',
+      sameSite: isProd ? 'Strict' : 'Lax',
       expires: new Date(0),
       maxAge: 0,
     });
@@ -685,7 +685,7 @@ export const logout = (req, res) => {
     res.cookie('refreshToken', '', {
       httpOnly: true,
       secure: isProd,
-      sameSite: isProd ? 'None' : 'Strict',
+      sameSite: isProd ? 'Strict' : 'Lax',
       expires: new Date(0),
       maxAge: 0,
     });
