@@ -138,7 +138,7 @@ export const login = async (req, res) => {
       .select('+password +loginAttempts +lockUntil +deactivatedAt +deactivationReason +active');
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(400).json({
         status: 'fail',
         message: 'The email address you entered is not registered.',
       });
@@ -188,7 +188,7 @@ export const login = async (req, res) => {
       }
 
       await user.save({ validateBeforeSave: false });
-      return res.status(401).json({
+      return res.status(400).json({
         status: 'fail',
         message: 'The password you entered is incorrect.',
       });

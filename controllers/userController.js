@@ -188,7 +188,7 @@ export const deleteMe = async (req, res, next) => {
     // 2. Match password using bcrypt
     const isMatch = await user.correctPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ status: 'fail', message: 'Incorrect password' });
+      return res.status(400).json({ status: 'fail', message: 'Incorrect password' });
     }
 
     // Before deletion
