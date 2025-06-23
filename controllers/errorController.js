@@ -60,9 +60,13 @@ const globalErrorHandler = (err, req, res, next) => {
 
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
+    console.log("Error",err);
   } else if (process.env.NODE_ENV === 'production') {
-    let error = { ...err };
+    let error = Object.create(err);
     error.message = err.message;
+    error.name = err.name;
+    error.code = err.code;
+    error.stack = err.stack;
 
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
@@ -73,6 +77,7 @@ const globalErrorHandler = (err, req, res, next) => {
     sendErrorProd(error, res);
   }
 };
+
 
 // 404 Not Found handler
 const notFoundHandler = (req, res, next) => {

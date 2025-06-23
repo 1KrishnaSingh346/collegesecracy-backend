@@ -3,6 +3,7 @@ import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -30,31 +31,70 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 
+  firstLogin : {
+    type : Boolean,
+    default : true
+  },
+
   // Security Fields
-  passwordChangedAt: {
-    type: Date,
-    select: false
-  },
-  passwordResetToken: {
-    type: String,
-    select: false
-  },
-  passwordResetExpires: {
-    type: Date,
-    select: false
-  },
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+passwordResetExpires: Date,
+
+
   active: {
     type: Boolean,
     default: true,
     select: false
   },
+  deactivatedAt: {
+  type: Date,
+  default: null,
+  select: false // Optional: hide it from API unless needed
+},
+deactivationReason: {
+  type: String,
+  default: ''
+},
+
+  ReactivatedAt: {
+  type: Date,
+  default: null,
+  select: false 
+},
+
+
+loginAttempts: {
+  type: Number,
+  default: 0
+},
+lockUntil: Date,
+
+isVerified: {
+  type: Boolean,
+  default: false,
+},
+verificationToken: String,
+verificationTokenExpiry: Date,
+
+resendCount: {
+  type: Number,
+  default: 0
+},
+lastResendAt: {
+  type: Date,
+  default: null
+},
 
   // Profile Fields
-  profilePic: {
-    type: String,
-    default: '',
-    maxlength: [500, 'Profile picture URL too long']
+profilePic: {
+  type: {
+    url: { type: String },
+    public_id: { type: String }
   },
+  default: null
+},
+
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot exceed 500 characters'],
@@ -71,114 +111,40 @@ const userSchema = new mongoose.Schema({
     default: ''
   },
   location: {
-    type: String,
-    validate: {
-      validator: function(v) {
-        return !v || /^[A-Za-z\s,]+$/.test(v);
-      },
-      message: 'Invalid location format'
-    },
-    default: ''
-  },
-  dateOfBirth: {
-    type: Date,
-    validate: {
-      validator: function(v) {
-        return !v || v <= Date.now();
-      },
-      message: 'Date of birth cannot be in the future'
-    },
-    default: null
-  },
-
-  lastActive: {
-    type: Date,
-    default: Date.now
-  },
-
-  // Verification Fields
-  verificationStatus: {
-    type: String,
-    enum: ['unverified', 'pending', 'verified', 'rejected'],
-    default: 'unverified'
-  },
-  verificationFeedback: {
-    type: String,
-    default: '',
-    maxlength: [500, 'Verification feedback too long']
-  },
-
-  feedback: {
-    type: String,
-    default: '',
-    maxlength: [500, 'Feedback cannot exceed 500 characters']
-  },
-  // feedbackRating: { 
-  //   type: Number,
-  //   min: 1,
-  //   max: 5,
-  //   default: 0,
-  //   validate: {
-  //     validator: function(v) {
-  //       return v >= 1 && v <= 5;
-  //     },
-  //     message: 'Rating must be between 1 and 5'
-  //   }
-  // },
-
-  // Subscription Fields
-  premium: {
-    type: Boolean,
-    default: false
-  },
-  premiumSince: {
-    type: Date
-  },
-
-  subscriptionPlan: {
-    type: String,
-    enum: ['basic', 'premium', 'enterprise'],
-    default: 'basic'
-  },
-  subscriptionPlanPrice: {
-    type: Number,
-    default: 0,
-    validate: {
-      validator: function(v) {
-        return v >= 0;
-      },
-      message: 'Price cannot be negative'
-    }
-  },
-
-// Add this to the User schema
-counselingPlans: {
-  josaa: {
-    active: { type: Boolean, default: false },
-    purchasedOn: Date,
-    validUntil: Date,
-    paymentId: String
-  },
-  jacDelhi: {
-    active: { type: Boolean, default: false },
-    purchasedOn: Date,
-    validUntil: Date,
-    paymentId: String
-  },
-  uptac: {
-    active: { type: Boolean, default: false },
-    purchasedOn: Date,
-    validUntil: Date,
-    paymentId: String
-  },
-  whatsapp: {
-    active: { type: Boolean, default: false },
-    purchasedOn: Date,
-    validUntil: Date,
-    paymentId: String,
-    whatsappGroupLink: String
-  }
+  type: String,
+  trim: true,
+  default: ''
 },
+
+dateOfBirth: {
+  type: Date,
+  default: null
+},
+
+
+  // Premium Tools Section
+  premiumTools: [
+    {
+      toolId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
+      planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
+      toolName : {type : String, required : true},
+      paymentId : {type: String, required : true },
+      purchasedOn: { type: Date, default: Date.now },
+      active : {type : Boolean, default:false}
+    }
+  ],
+
+  // Counseling Plans Section
+counselingPlans: [
+  {
+    planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
+    planName : { type : String, required : true},
+    paymentId : {type: String, required : true },
+    purchasedOn: { type: Date, default: Date.now },
+    active: { type: Boolean, default: false }
+  }
+],
+
 
   // Mentor-Specific Fields
   idProof: {
@@ -191,11 +157,6 @@ counselingPlans: {
       },
       message: 'Invalid Cloudinary URL'
     }
-  },
-  collegeName: {
-    type: String,
-    required: function() { return this.role === 'mentor'; },
-    maxlength: [100, 'College name too long']
   },
   expertise: {
     type: [String],
@@ -216,38 +177,6 @@ counselingPlans: {
     ],
     set: function(arr) {
       return arr.map(item => item.toLowerCase().trim());
-    }
-  },
-  socialLinks: {
-    linkedIn: {
-      type: String,
-      validate: {
-        validator: function(v) {
-          return !v || validator.isURL(v);
-        },
-        message: 'Invalid LinkedIn URL'
-      },
-      default: ''
-    },
-    twitter: {
-      type: String,
-      validate: {
-        validator: function(v) {
-          return !v || validator.isURL(v);
-        },
-        message: 'Invalid Twitter URL'
-      },
-      default: ''
-    },
-    github: {
-      type: String,
-      validate: {
-        validator: function(v) {
-          return !v || validator.isURL(v);
-        },
-        message: 'Invalid GitHub URL'
-      },
-      default: ''
     }
   },
 
@@ -283,10 +212,19 @@ counselingPlans: {
     set: function(arr) {
       return arr.map(item => item.toLowerCase().trim());
     }
+  },
+
+
+
+  // Timestamps
+  lastActive: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true,
   toJSON: {
+    virtuals: true,
     transform: function(doc, ret) {
       delete ret.password;
       delete ret.__v;
@@ -297,6 +235,7 @@ counselingPlans: {
     }
   },
   toObject: {
+    virtuals: true,
     transform: function(doc, ret) {
       delete ret.password;
       delete ret.__v;
@@ -312,7 +251,11 @@ counselingPlans: {
 userSchema.index({ role: 1 });
 userSchema.index({ premium: 1 });
 userSchema.index({ verificationStatus: 1 });
+userSchema.index({ 'paymentHistory.status': 1 });
+userSchema.index({ 'premiumTools.toolId': 1 });
 
+
+// Pre-save hooks
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -331,38 +274,77 @@ userSchema.pre('save', function(next) {
   next();
 });
 
-userSchema.pre(/^find/, function(next) {
-  this.find({ active: { $ne: false } });
-  next();
+userSchema.statics.findActive = function(filter) {
+  return this.find({ ...filter, active: { $ne: false } });
+};
+
+userSchema.statics.findActiveOne = function(filter = {}) {
+  return this.findOne({ ...filter, active: { $ne: false } });
+};
+
+
+
+// Methods
+userSchema.methods = {
+  correctPassword: async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+  },
+
+  changedPasswordAfter: function(JWTTimestamp) {
+    if (this.passwordChangedAt) {
+      const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+      return JWTTimestamp < changedTimestamp;
+    }
+    return false;
+  }
+}
+
+
+userSchema.methods.hasPremiumTool = function(toolId) {
+  return this.premiumTools?.some(tool => tool.toolId?.toString() === toolId.toString());
+};
+
+userSchema.methods.addPremiumTool = async function(toolId, planId, toolName, paymentId, active = true) {
+  if (!this.hasPremiumTool(toolId)) {
+    this.premiumTools.push({
+      toolId,
+      planId,
+      toolName,
+      paymentId,
+      purchasedOn: new Date(),
+      active
+    });
+    await this.save();
+  }
+};
+
+userSchema.methods.hasActiveCounselingPlan = function(planId) {
+  const plan = this.counselingPlans?.find(p => p.planId.toString() === planId.toString());
+  return plan?.active && (!plan.validUntil || new Date(plan.validUntil) > new Date());
+};
+
+userSchema.methods.addCounselingPlan = async function(planData) {
+  const newPlan = {
+    ...planData,
+    purchasedOn: new Date(),
+    active: true
+  };
+  this.counselingPlans.push(newPlan);
+  await this.save();
+};
+// Virtual populate for feedbacks
+userSchema.virtual('feedbacks', {
+  ref: 'Feedback',
+  localField: '_id',
+  foreignField: 'userId',
+  justOne: false
 });
 
-userSchema.methods.correctPassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
+userSchema.virtual('isLocked').get(function () {
+  return !!(this.lockUntil && this.lockUntil > Date.now());
+});
 
-userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
-  if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
-    return JWTTimestamp < changedTimestamp;
-  }
-  return false;
-};
 
-userSchema.methods.createPasswordResetToken = function() {
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  
-  this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-  
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-  
-  return resetToken;
-};
 
-userSchema.methods.isPremium = function() {
-  return this.premium && this.premiumSince;
-};
 
 export const User = mongoose.model('User', userSchema);

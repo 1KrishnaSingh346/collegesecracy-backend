@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Invoice</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 40px;
+        background-color: #f9f9f9;
+        color: #333;
+      }
+
+      .invoice-box {
+        max-width: 700px;
+        margin: auto;
+        padding: 30px;
+        background: #fff;
+        border: 1px solid #eee;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+      }
+
+      .invoice-box h1 {
+        font-size: 28px;
+        color: #4A4A4A;
+        margin-bottom: 10px;
+      }
+
+      .company-details {
+        text-align: right;
+        font-size: 14px;
+        color: #777;
+      }
+
+      .info {
+        margin-top: 20px;
+        font-size: 16px;
+      }
+
+      .info p {
+        margin: 6px 0;
+      }
+
+      .divider {
+        margin: 20px 0;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .summary {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .summary span {
+        font-weight: bold;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #888;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-box">
+      <div class="header">
+        <h1>Payment Invoice</h1>
+        <div class="company-details">
+          <strong>CollegeSecracy</strong><br />
+          supportcollegesecracy@gmail.com<br />
+          www.collegesecracy.com
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="info">
+        <p><strong>Customer:</strong> <%= user.fullName %></p>
+        <p><strong>Email:</strong> <%= user.email %></p>
+        <p><strong>Plan:</strong> <%= plan.title %></p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="summary">
+        <p><span>Amount Paid:</span> ₹<%= (payment.amount / 100).toFixed(2) %></p>
+        <p><span>Payment ID:</span> <%= payment.id %></p>
+        <p><span>Receipt Number:</span> <%= purchase?.receipt || 'N/A' %></p>
+        <p><span>Date:</span> <%= new Date().toLocaleString() %></p>
+        <p><span>Status:</span> PAID ✅</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="footer">
+        This invoice is computer generated and does not require a physical signature.
+        <br />
+        Please contact us if you have any questions regarding this invoice.
+      </div>
+    </div>
+  </body>
+</html>

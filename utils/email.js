@@ -25,7 +25,7 @@ const transporter = nodemailer.createTransport({
 export const sendEmail = async ({ email, subject, message }) => {
   try {
     const mailOptions = {
-      from: `"CollegeSecrecy" <${process.env.EMAIL_FROM}>`,
+      from: `"CollegeSecracy" <${process.env.EMAIL_FROM}>`,
       to: email,
       subject,
       text: message,

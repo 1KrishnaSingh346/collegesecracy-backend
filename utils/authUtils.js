@@ -1,34 +1,47 @@
 import jwt from "jsonwebtoken";
 
-const signToken = (id) => {
+const signAccessToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
+    expiresIn: process.env.JWT_EXPIRES_IN, // e.g. '15m'
+  });
+};
+
+const signRefreshToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN, // e.g. '7d'
   });
 };
 
 const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user._id);
-  
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: process.env.ENV === 'production',
-    sameSite: process.env.ENV_MODE === 'production' ? 'lax' : 'none',
-  };
+  const accessToken = signAccessToken(user._id);
+  const refreshToken = signRefreshToken(user._id);
 
-  res.cookie('jwt', token, cookieOptions);
-  
-  // Remove password from output
+  const isProd = process.env.NODE_ENV === 'production';
+
+  // 🍪 Access Token Cookie (short-lived)
+  res.cookie('jwt', accessToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'None' : 'Lax',
+    maxAge: 15 * 60 * 1000 // 15 minutes
+  });
+
+  // 🍪 Refresh Token Cookie (long-lived)
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'None' : 'Lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+
+  // Optional: strip password before sending user object
   user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
-    token,
     data: {
-      user
-    }
+      user,
+    },
   });
 };
 

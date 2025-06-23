@@ -1,7 +1,8 @@
 import { User } from '../models/User.js';
 import CollegeData from '../models/CollegeData.js';
+import { Feedback } from '../models/FeedBackSchema.js';
+import Notification from '../models/Notification.js';
 import XLSX from 'xlsx';
-
 // User Management Functions (existing)
 const getAllUsers = async (req, res) => {
   try {
@@ -261,14 +262,96 @@ const deleteCollegeData = async (req, res) => {
   }
 };
 
+
+// feedbackController.js
+
+// Get all feedbacks for a specific user (admin only)
+ const getAllFeedbacks = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const query = userId ? { userId } : {};
+    
+    const feedbacks = await Feedback.find(query)
+      .sort({ createdAt: -1 })
+      .lean();
+      
+    res.status(200).json(feedbacks);
+  } catch (error) {
+    console.error("Error fetching feedbacks:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+const updateFeedbackStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    // Add validation for status
+    if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
+      return res.status(400).json({ 
+        error: "Invalid status value. Must be 'approved', 'rejected', or 'pending'" 
+      });
+    }
+    
+    const updatedFeedback = await Feedback.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+    
+    if (!updatedFeedback) {
+      return res.status(404).json({ error: "Feedback not found" });
+    }
+    
+    res.status(200).json(updatedFeedback);
+  } catch (error) {
+    console.error("Error updating feedback:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+export const getNotifications = async (req, res) => {
+    try {
+        const notifications = await Notification.find()
+            .sort({ createdAt: -1 })
+            .populate('userId', 'email fullName')
+            .populate('feedbackId', 'message category starRating status');
+            
+        res.status(200).json(notifications);
+    } catch (error) {
+        console.error("Error fetching notifications:", error);
+        res.status(500).json({ error: "Server Error" });
+    }
+};
+
+export const markAsRead = async (req, res) => {
+    try {
+        const notification = await Notification.findByIdAndUpdate(
+            req.params.id,
+            { isRead: true },
+            { new: true }
+        );
+        
+        if (!notification) {
+            return res.status(404).json({ error: "Notification not found" });
+        }
+        
+        res.status(200).json(notification);
+    } catch (error) {
+        console.error("Error marking notification as read:", error);
+        res.status(500).json({ error: "Server Error" });
+    }
+};
+
 export {
-  // User management
-  getAllUsers,
   
-  // College data management
+  getAllUsers,
   getAllCollegeData,
   getCollegeDataByTypeAndRound,
   uploadCollegeData,
   updateCollegeData,
-  deleteCollegeData
+  deleteCollegeData,
+  getAllFeedbacks,
+  updateFeedbackStatus
 };

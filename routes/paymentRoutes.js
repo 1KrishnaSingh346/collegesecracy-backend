@@ -1,13 +1,11 @@
 import express from 'express';
+import { createOrder, verifyPayment, paymentWebhook } from '../controllers/paymentController.js';
 import { protect } from '../middlewares/auth.js';
-import { createOrder, verifyPayment, getPaymentDetails } from '../controllers/paymentController.js';
 
 const router = express.Router();
 
-router.use(protect);
-
-router.post('/create-order', createOrder);
-router.post('/verify-payment', verifyPayment);
-router.get('/payment-details/:paymentId', getPaymentDetails);
+router.post('/create-order', protect, createOrder);
+router.post('/verify', protect, verifyPayment);
+router.post('/webhook', express.raw({ type: 'application/json' }), paymentWebhook);
 
 export default router;
