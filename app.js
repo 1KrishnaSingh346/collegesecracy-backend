@@ -15,7 +15,6 @@ import publicRoutes from './routes/publicRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js';
 import UserPurchase_Schema from "./models/UserPurchaseSchema.js";
 import { generateInvoice } from "./utils/generateInvoice.js";
-import path from "path";
 if (process.env.NODE_ENV === 'production') {
   import('./utils/invoiceCleanup.js');
 }
