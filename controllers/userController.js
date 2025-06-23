@@ -369,7 +369,8 @@ export const editFeedback = async (req, res) => {
 
 export const getFeedbacks = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user?._id;
+        console.log("USer id", userId);
         const feedbacks = await Feedback.find({ userId })
             .sort({ createdAt: -1 })
              .lean();
