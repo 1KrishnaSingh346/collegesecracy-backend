@@ -140,7 +140,7 @@ export const refreshToken = async (req, res) => {
     res.cookie('jwt', newAccessToken, {
       httpOnly: true,
       secure: isProd,
-      sameSite: isProd ? 'Strict' : 'Lax',
+      sameSite: isProd ? 'None' : 'Lax',
       maxAge: 15 * 60 * 1000,
     });
 

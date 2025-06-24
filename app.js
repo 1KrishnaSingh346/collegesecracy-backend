@@ -25,31 +25,22 @@ import { globalErrorHandler, notFoundHandler } from './controllers/errorControll
 const __dirname = path.resolve();
 const app = express();
 
-// CORS configuration based on environment
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
-  credentials: true
+  credentials: true,
 };
 
 if (process.env.NODE_ENV === 'production') {
-  // Production-specific middleware
   app.use(cors(corsOptions));
-  app.set('trust proxy', 1); // Trust first proxy
-  
-  // Secure cookies, HTTPS, etc. can be configured here
+  app.set('trust proxy', 1); // Trust Render/Heroku
 } else {
-  // Development-specific middleware
-  app.use(cors({
-    ...corsOptions,
-    // More relaxed settings for development
-  }));
-  app.use(morgan('dev')); // Only use morgan in development
+  app.use(cors(corsOptions));
+  app.use(morgan('dev'));
 }
-app.set('trust proxy', 1);
 
-// Common middleware
 app.use(express.json());
 app.use(cookieParser());
+app.options('*', cors(corsOptions)); 
 
 // app.use(express.static(path.join(__dirname, 'dist')));
 // app.get('*', (req, res) => {
