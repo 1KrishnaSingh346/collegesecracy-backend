@@ -26,7 +26,7 @@ const __dirname = path.resolve();
 const app = express();
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
+  origin: process.env.FRONTEND_URL || 'https://collegesecracy.onrender.com',
   credentials: true,
 };
 
