@@ -41,7 +41,7 @@ if (process.env.NODE_ENV === 'production') {
 
 app.use(express.json());
 app.use(cookieParser());
-app.options('*', cors(corsOptions)); // ✅ CORRECT
+app.options(/.*/, cors(corsOptions)); // ✅ CORRECT
 
 
 // app.use(express.static(path.join(__dirname, 'dist')));
