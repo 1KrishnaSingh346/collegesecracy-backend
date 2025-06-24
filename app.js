@@ -29,6 +29,7 @@ const corsOptions = {
   origin: process.env.FRONTEND_URL || 'https://collegesecracy.onrender.com',
   credentials: true,
 };
+console.log("🧪 FRONTEND_URL:", corsOptions.origin);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(cors(corsOptions));
@@ -40,7 +41,8 @@ if (process.env.NODE_ENV === 'production') {
 
 app.use(express.json());
 app.use(cookieParser());
-app.options('*', cors(corsOptions)); 
+app.options('*', cors(corsOptions)); // ✅ CORRECT
+
 
 // app.use(express.static(path.join(__dirname, 'dist')));
 // app.get('*', (req, res) => {
